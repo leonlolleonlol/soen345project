@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="980" viewBox="0 0 1800 980">
+  <style>
+    .box { fill: #ffffff; stroke: #c8d3e0; stroke-width: 2; rx: 8; ry: 8; }
+    .header { fill: #295b8f; }
+    .title { fill: #ffffff; font: 700 22px Arial, sans-serif; }
+    .field { fill: #263238; font: 18px Arial, sans-serif; }
+    .type { fill: #6b7280; font: 16px Arial, sans-serif; }
+    .line { stroke: #8b95a5; stroke-width: 3; fill: none; }
+    .label { fill: #6b7280; font: 14px Arial, sans-serif; }
+    .bg { fill: #f5f7fb; }
+  </style>
+
+  <rect class="bg" x="0" y="0" width="1800" height="980" />
+
+  <path class="line" d="M 280 140 L 280 100 L 1070 100 L 1070 210" />
+  <path class="line" d="M 280 160 L 280 620 L 660 620 L 660 560" />
+  <path class="line" d="M 260 520 L 260 610 L 650 610" />
+  <path class="line" d="M 870 210 L 920 210 L 920 170 L 1070 170" />
+  <path class="line" d="M 870 290 L 920 290 L 920 300 L 1070 300" />
+  <path class="line" d="M 1280 145 L 1360 145 L 1360 130 L 1600 130" />
+
+  <g transform="translate(50,60)">
+    <rect class="box" width="270" height="255" />
+    <rect class="header" width="270" height="42" />
+    <text class="title" x="16" y="28">Users</text>
+    <text class="field" x="16" y="70">user_id</text>
+    <text class="type" x="210" y="70">int</text>
+    <text class="field" x="16" y="105">first_name</text>
+    <text class="type" x="150" y="105">varchar(50) NN</text>
+    <text class="field" x="16" y="140">last_name</text>
+    <text class="type" x="156" y="140">varchar(50) NN</text>
+    <text class="field" x="16" y="175">email</text>
+    <text class="type" x="174" y="175">varchar(100) NN</text>
+    <text class="field" x="16" y="210">phone_number</text>
+    <text class="type" x="152" y="210">varchar(20)</text>
+    <text class="field" x="16" y="245">password_hash</text>
+    <text class="type" x="138" y="245">varchar(255) NN</text>
+    <text class="field" x="16" y="280">role</text>
+    <text class="type" x="142" y="280">enum(CUSTOMER, ADMIN) NN</text>
+    <text class="field" x="16" y="315">created_at</text>
+    <text class="type" x="176" y="315">datetime</text>
+  </g>
+
+  <g transform="translate(50,390)">
+    <rect class="box" width="250" height="190" />
+    <rect class="header" width="250" height="42" />
+    <text class="title" x="16" y="28">Venues</text>
+    <text class="field" x="16" y="70">venue_id</text>
+    <text class="type" x="190" y="70">int</text>
+    <text class="field" x="16" y="105">venue_name</text>
+    <text class="type" x="130" y="105">varchar(100) NN</text>
+    <text class="field" x="16" y="140">address</text>
+    <text class="type" x="154" y="140">varchar(255) NN</text>
+    <text class="field" x="16" y="175">city</text>
+    <text class="type" x="174" y="175">varchar(100) NN</text>
+    <text class="field" x="16" y="210">capacity</text>
+    <text class="type" x="192" y="210">int NN</text>
+  </g>
+
+  <g transform="translate(50,700)">
+    <rect class="box" width="265" height="110" />
+    <rect class="header" width="265" height="42" />
+    <text class="title" x="16" y="28">Categories</text>
+    <text class="field" x="16" y="70">category_id</text>
+    <text class="type" x="188" y="70">int</text>
+    <text class="field" x="16" y="105">category_name</text>
+    <text class="type" x="152" y="105">varchar(50) NN</text>
+  </g>
+
+  <g transform="translate(610,250)">
+    <rect class="box" width="330" height="340" />
+    <rect class="header" width="330" height="42" />
+    <text class="title" x="16" y="28">Events</text>
+    <text class="field" x="16" y="70">event_id</text>
+    <text class="type" x="255" y="70">int</text>
+    <text class="field" x="16" y="105">title</text>
+    <text class="type" x="215" y="105">varchar(100) NN</text>
+    <text class="field" x="16" y="140">description</text>
+    <text class="type" x="255" y="140">text</text>
+    <text class="field" x="16" y="175">event_date</text>
+    <text class="type" x="240" y="175">datetime NN</text>
+    <text class="field" x="16" y="210">available_tickets</text>
+    <text class="type" x="215" y="210">int NN</text>
+    <text class="field" x="16" y="245">price</text>
+    <text class="type" x="200" y="245">decimal(10,2) NN</text>
+    <text class="field" x="16" y="280">status</text>
+    <text class="type" x="170" y="280">enum(ACTIVE, CANCELLED) NN</text>
+    <text class="field" x="16" y="315">venue_id</text>
+    <text class="type" x="252" y="315">int NN</text>
+    <text class="field" x="16" y="350">category_id</text>
+    <text class="type" x="238" y="350">int NN</text>
+    <text class="field" x="16" y="385">created_by</text>
+    <text class="type" x="244" y="385">int NN</text>
+    <text class="field" x="16" y="420">created_at</text>
+    <text class="type" x="238" y="420">datetime</text>
+  </g>
+
+  <g transform="translate(1030,60)">
+    <rect class="box" width="330" height="255" />
+    <rect class="header" width="330" height="42" />
+    <text class="title" x="16" y="28">Reservations</text>
+    <text class="field" x="16" y="70">reservation_id</text>
+    <text class="type" x="255" y="70">int</text>
+    <text class="field" x="16" y="105">user_id</text>
+    <text class="type" x="270" y="105">int NN</text>
+    <text class="field" x="16" y="140">event_id</text>
+    <text class="type" x="270" y="140">int NN</text>
+    <text class="field" x="16" y="175">number_of_tickets</text>
+    <text class="type" x="244" y="175">int NN</text>
+    <text class="field" x="16" y="210">reservation_date</text>
+    <text class="type" x="212" y="210">datetime</text>
+    <text class="field" x="16" y="245">status</text>
+    <text class="type" x="188" y="245">enum(CONFIRMED, CANCELLED) NN</text>
+    <text class="field" x="16" y="280">total_price</text>
+    <text class="type" x="220" y="280">decimal(10,2) NN</text>
+  </g>
+
+  <g transform="translate(1530,60)">
+    <rect class="box" width="220" height="190" />
+    <rect class="header" width="220" height="42" />
+    <text class="title" x="16" y="28">Confirmations</text>
+    <text class="field" x="16" y="70">confirmation_id</text>
+    <text class="type" x="168" y="70">int</text>
+    <text class="field" x="16" y="105">reservation_id</text>
+    <text class="type" x="172" y="105">int NN</text>
+    <text class="field" x="16" y="140">confirmation_type</text>
+    <text class="type" x="104" y="140">enum(EMAIL, SMS) NN</text>
+    <text class="field" x="16" y="175">sent_at</text>
+    <text class="type" x="164" y="175">datetime</text>
+    <text class="field" x="16" y="210">confirmation_message</text>
+    <text class="type" x="108" y="210">text</text>
+  </g>
+
+  <text class="label" x="350" y="94">User creates events</text>
+  <text class="label" x="345" y="606">Venue hosts events</text>
+  <text class="label" x="340" y="693">Category classifies events</text>
+  <text class="label" x="925" y="165">User makes reservation</text>
+  <text class="label" x="925" y="296">Reservation references event</text>
+  <text class="label" x="1375" y="126">Reservation has confirmations</text>
+</svg>
