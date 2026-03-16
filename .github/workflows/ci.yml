@@ -85,9 +85,10 @@ jobs:
         working-directory: backend
         run: ./gradlew test jacocoTestReport
 
-      - name: SonarQube analysis
-        working-directory: backend
+      - name: SonarCloud analysis
+        uses: SonarSource/sonarcloud-github-action@v3
+        with:
+          projectBaseDir: backend
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
-        run: ./gradlew sonar
