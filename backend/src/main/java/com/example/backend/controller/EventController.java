@@ -1,9 +1,8 @@
 package com.example.backend.controller;
 
-import java.util.List;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.backend.service.EventService;
@@ -19,7 +18,7 @@ public class EventController {
 	}
 
 	@GetMapping
-	public List<EventResponse> getActiveEvents() {
-		return eventService.getActiveEvents();
+	public PagedEventResponse getActiveEvents(@RequestParam(defaultValue = "0") int page) {
+		return eventService.getActiveEvents(page);
 	}
 }
