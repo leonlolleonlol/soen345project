@@ -1,6 +1,12 @@
 export type AuthMode = 'login' | 'register'
 export type ActiveTab = 'events' | 'my-events'
 
+export type EventFilter = {
+  city: string
+  category: string
+  fromDate: string
+}
+
 export type ApiErrorResponse = {
   detail?: string
   message?: string
