@@ -53,6 +53,7 @@ dist
 dist-ssr
 *.local
 .env.dev.ps1
+backend/.env
 
 # Editor directories and files
 .vscode/*

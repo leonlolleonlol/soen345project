@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import type { FormEvent } from 'react'
 import './App.css'
 
 type UserRole = 'CUSTOMER' | 'ADMIN'
 type AuthMode = 'login' | 'register'
+type ActiveTab = 'events' | 'my-events'
 
 type UserRecord = {
   userId: number
@@ -15,84 +15,12 @@ type UserRecord = {
   createdAt: string
 }
 
-type DashboardMetric = {
-  label: string
-  value: string
-  note: string
-}
-
-type DashboardAction = {
-  title: string
-  description: string
-}
-
 type ApiErrorResponse = {
   detail?: string
   message?: string
 }
 
-const DASHBOARD_COPY: Record<
-  UserRole,
-  {
-    title: string
-    summary: string
-    metrics: DashboardMetric[]
-    actions: DashboardAction[]
-  }
-> = {
-  CUSTOMER: {
-    title: 'Customer Dashboard',
-    summary:
-      'Review reservations, keep track of upcoming plans, and move quickly into event browsing.',
-    metrics: [
-      { label: 'Upcoming Trips', value: '3', note: 'Next booking this weekend' },
-      { label: 'Open Reservations', value: '2', note: 'Ready to manage' },
-      { label: 'Unread Confirmations', value: '1', note: 'Latest email waiting' },
-    ],
-    actions: [
-      {
-        title: 'Browse events',
-        description: 'Explore new concerts, travel dates, sports, and local experiences.',
-      },
-      {
-        title: 'Manage reservations',
-        description: 'Review active bookings and make changes before confirmation deadlines.',
-      },
-      {
-        title: 'View confirmations',
-        description: 'Check email and SMS confirmations for recent reservations.',
-      },
-    ],
-  },
-  ADMIN: {
-    title: 'Admin Dashboard',
-    summary:
-      'Monitor event activity, manage inventory, and keep venue operations organized from one place.',
-    metrics: [
-      { label: 'Active Events', value: '12', note: '4 need review today' },
-      { label: 'Venues Managed', value: '5', note: '2 at high capacity' },
-      { label: 'Pending Changes', value: '7', note: 'Awaiting approval' },
-    ],
-    actions: [
-      {
-        title: 'Create an event',
-        description: 'Add a new listing with schedule, venue, pricing, and ticket limits.',
-      },
-      {
-        title: 'Edit live events',
-        description: 'Update timing, pricing, and availability without leaving the dashboard.',
-      },
-      {
-        title: 'Review reservations',
-        description: 'Track customer demand and handle cancellations or operational issues.',
-      },
-    ],
-  },
-}
-
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
-
-const getFullName = (user: UserRecord) => `${user.firstName} ${user.lastName}`
 const getApiUrl = (path: string) => (API_BASE_URL ? `${API_BASE_URL}${path}` : path)
 
 function App() {
@@ -111,41 +39,26 @@ function App() {
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [activeTab, setActiveTab] = useState<ActiveTab>('events')
 
-  const handleLoginSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleLoginSubmit = async (event: { preventDefault(): void }) => {
     event.preventDefault()
-
-    if (isSubmitting) {
-      return
-    }
-
+    if (isSubmitting) return
     setError('')
     setSuccessMessage('')
     setIsSubmitting(true)
-
     try {
       const response = await fetch(getApiUrl('/api/auth/login'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: loginIdentifier,
-          password: loginPassword,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: loginIdentifier, password: loginPassword }),
       })
-
       if (!response.ok) {
         const errorResponse = (await response.json().catch(() => null)) as ApiErrorResponse | null
         setCurrentUser(null)
-        setError(
-          errorResponse?.detail ??
-            errorResponse?.message ??
-            'We could not sign you in right now.',
-        )
+        setError(errorResponse?.detail ?? errorResponse?.message ?? 'We could not sign you in right now.')
         return
       }
-
       const user = (await response.json()) as UserRecord
       setCurrentUser(user)
       setError('')
@@ -157,45 +70,26 @@ function App() {
     }
   }
 
-  const handleRegisterSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleRegisterSubmit = async (event: { preventDefault(): void }) => {
     event.preventDefault()
-
-    if (isSubmitting) {
-      return
-    }
-
+    if (isSubmitting) return
     setError('')
     setSuccessMessage('')
     setIsSubmitting(true)
-
     try {
       const response = await fetch(getApiUrl('/api/auth/register'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(registrationForm),
       })
-
       if (!response.ok) {
         const errorResponse = (await response.json().catch(() => null)) as ApiErrorResponse | null
-        setError(
-          errorResponse?.detail ??
-            errorResponse?.message ??
-            'We could not create your account right now.',
-        )
+        setError(errorResponse?.detail ?? errorResponse?.message ?? 'We could not create your account right now.')
         return
       }
-
       const user = (await response.json()) as UserRecord
       setCurrentUser(user)
-      setRegistrationForm({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phoneNumber: '',
-        password: '',
-      })
+      setRegistrationForm({ firstName: '', lastName: '', email: '', phoneNumber: '', password: '' })
       setLoginIdentifier(user.email ?? user.phoneNumber ?? '')
       setLoginPassword('')
       setSuccessMessage('Account created successfully.')
@@ -211,87 +105,110 @@ function App() {
     setLoginPassword('')
     setShowPassword(false)
     setError('')
+    setActiveTab('events')
   }
 
   if (currentUser) {
-    const dashboard = DASHBOARD_COPY[currentUser.role]
+    const initials =
+      (currentUser.firstName[0] ?? '').toUpperCase() +
+      (currentUser.lastName[0] ?? '').toUpperCase()
 
     return (
-      <main className="dashboard-shell">
-        <section className="dashboard-hero">
-          <div className="dashboard-topbar">
-            <div>
-              <p className="eyebrow">Ticket Reservation Application</p>
-              <h1>{dashboard.title}</h1>
+      <div className="app-shell">
+        <header className="site-header">
+          <div className="header-inner">
+            <span className="tm-logo">TicketMonster</span>
+
+            <nav className="header-nav" aria-label="Main navigation">
+              <button
+                type="button"
+                className={`nav-link${activeTab === 'events' ? ' active' : ''}`}
+                onClick={() => setActiveTab('events')}
+              >
+                Events
+              </button>
+              <button
+                type="button"
+                className={`nav-link${activeTab === 'my-events' ? ' active' : ''}`}
+                onClick={() => setActiveTab('my-events')}
+              >
+                My Events
+              </button>
+            </nav>
+
+            <div className="header-profile">
+              <div className="profile-avatar" aria-hidden="true">{initials}</div>
+              <span className="profile-name">
+                {currentUser.firstName} {currentUser.lastName}
+              </span>
+              <button type="button" className="signout-btn" onClick={logout}>
+                Sign out
+              </button>
             </div>
-            <button type="button" className="secondary-button" onClick={logout}>
-              Log out
-            </button>
           </div>
 
-          <div className="hero-banner">
-            <div>
-              <p className="banner-label">Signed in as</p>
-              <h2>{getFullName(currentUser)}</h2>
-              <p className="banner-text">{dashboard.summary}</p>
-            </div>
-            <span className={`role-pill ${currentUser.role}`}>{currentUser.role}</span>
-          </div>
-        </section>
+          {activeTab === 'events' && (
+            <div className="header-search">
+              <div className="search-bar">
+                <div className="search-segment">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  <div className="search-segment-inner">
+                    <span className="search-label">LOCATION</span>
+                    <input type="text" className="search-input" placeholder="City or Postal Code" />
+                  </div>
+                </div>
 
-        <section className="metrics-grid">
-          {dashboard.metrics.map((metric) => (
-            <article className="metric-card" key={metric.label}>
-              <p className="metric-label">{metric.label}</p>
-              <strong className="metric-value">{metric.value}</strong>
-              <p className="metric-note">{metric.note}</p>
-            </article>
-          ))}
-        </section>
+                <div className="search-divider" />
 
-        <section className="dashboard-grid">
-          <article className="panel-card">
-            <div className="panel-heading">
-              <p className="eyebrow">Quick Actions</p>
-              <h3>What would you like to do next?</h3>
-            </div>
-            <div className="action-list">
-              {dashboard.actions.map((action) => (
-                <article className="action-card" key={action.title}>
-                  <strong>{action.title}</strong>
-                  <p>{action.description}</p>
-                </article>
-              ))}
-            </div>
-          </article>
+                <div className="search-segment">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                  <div className="search-segment-inner">
+                    <span className="search-label">DATES</span>
+                    <div className="dates-row">
+                      <span>All Dates</span>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
 
-          <article className="panel-card compact">
-            <div className="panel-heading">
-              <p className="eyebrow">Profile</p>
-              <h3>Account Summary</h3>
-            </div>
+                <div className="search-divider" />
 
-            <dl className="profile-list">
-              <div>
-                <dt>Name</dt>
-                <dd>{getFullName(currentUser)}</dd>
+                <div className="search-segment search-segment--grow">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  <div className="search-segment-inner">
+                    <span className="search-label">SEARCH</span>
+                    <input type="text" className="search-input" placeholder="Artist, Event or Venue" />
+                  </div>
+                </div>
+
+                <button type="button" className="search-button">Search</button>
               </div>
-              <div>
-                <dt>Email</dt>
-                <dd>{currentUser.email ?? 'Not provided'}</dd>
-              </div>
-              <div>
-                <dt>Role</dt>
-                <dd>{currentUser.role}</dd>
-              </div>
-              <div>
-                <dt>Phone</dt>
-                <dd>{currentUser.phoneNumber ?? 'Not provided'}</dd>
-              </div>
-            </dl>
-          </article>
-        </section>
-      </main>
+            </div>
+          )}
+        </header>
+
+        <main className="page-content">
+          {activeTab === 'events' && (
+            <div className="tab-panel" />
+          )}
+          {activeTab === 'my-events' && (
+            <div className="tab-panel" />
+          )}
+        </main>
+      </div>
     )
   }
 
@@ -299,7 +216,7 @@ function App() {
     <main className="login-shell">
       <section className="login-card">
         <div className="card-heading">
-          <p className="eyebrow">Ticket Reservation Application</p>
+          <p className="tm-logo-login">TicketMonster</p>
           <h1>{mode === 'login' ? 'Login' : 'Register'}</h1>
           <p className="support-text">
             {mode === 'login'
@@ -312,20 +229,14 @@ function App() {
           <button
             type="button"
             className={`auth-tab ${mode === 'login' ? 'active' : ''}`}
-            onClick={() => {
-              setMode('login')
-              setError('')
-            }}
+            onClick={() => { setMode('login'); setError('') }}
           >
             Login
           </button>
           <button
             type="button"
             className={`auth-tab ${mode === 'register' ? 'active' : ''}`}
-            onClick={() => {
-              setMode('register')
-              setError('')
-            }}
+            onClick={() => { setMode('register'); setError('') }}
           >
             Register
           </button>
@@ -339,7 +250,7 @@ function App() {
                 type="text"
                 name="identifier"
                 value={loginIdentifier}
-                onChange={(event) => setLoginIdentifier(event.target.value)}
+                onChange={(e) => setLoginIdentifier(e.target.value)}
                 placeholder="Enter your email or phone number"
                 autoComplete="username"
               />
@@ -352,15 +263,11 @@ function App() {
                   type={showPassword ? 'text' : 'password'}
                   name="password"
                   value={loginPassword}
-                  onChange={(event) => setLoginPassword(event.target.value)}
+                  onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="Enter your password"
                   autoComplete="current-password"
                 />
-                <button
-                  type="button"
-                  className="ghost-button"
-                  onClick={() => setShowPassword((value) => !value)}
-                >
+                <button type="button" className="ghost-button" onClick={() => setShowPassword((v) => !v)}>
                   {showPassword ? 'Hide' : 'Show'}
                 </button>
               </div>
@@ -379,29 +286,18 @@ function App() {
                   type="text"
                   name="firstName"
                   value={registrationForm.firstName}
-                  onChange={(event) =>
-                    setRegistrationForm((current) => ({
-                      ...current,
-                      firstName: event.target.value,
-                    }))
-                  }
+                  onChange={(e) => setRegistrationForm((c) => ({ ...c, firstName: e.target.value }))}
                   placeholder="First name"
                   autoComplete="given-name"
                 />
               </label>
-
               <label className="field">
                 <span>Last name</span>
                 <input
                   type="text"
                   name="lastName"
                   value={registrationForm.lastName}
-                  onChange={(event) =>
-                    setRegistrationForm((current) => ({
-                      ...current,
-                      lastName: event.target.value,
-                    }))
-                  }
+                  onChange={(e) => setRegistrationForm((c) => ({ ...c, lastName: e.target.value }))}
                   placeholder="Last name"
                   autoComplete="family-name"
                 />
@@ -414,12 +310,7 @@ function App() {
                 type="email"
                 name="email"
                 value={registrationForm.email}
-                onChange={(event) =>
-                  setRegistrationForm((current) => ({
-                    ...current,
-                    email: event.target.value,
-                  }))
-                }
+                onChange={(e) => setRegistrationForm((c) => ({ ...c, email: e.target.value }))}
                 placeholder="Enter your email"
                 autoComplete="email"
               />
@@ -431,12 +322,7 @@ function App() {
                 type="tel"
                 name="phoneNumber"
                 value={registrationForm.phoneNumber}
-                onChange={(event) =>
-                  setRegistrationForm((current) => ({
-                    ...current,
-                    phoneNumber: event.target.value,
-                  }))
-                }
+                onChange={(e) => setRegistrationForm((c) => ({ ...c, phoneNumber: e.target.value }))}
                 placeholder="Enter your phone number"
                 autoComplete="tel"
               />
@@ -449,20 +335,11 @@ function App() {
                   type={showPassword ? 'text' : 'password'}
                   name="password"
                   value={registrationForm.password}
-                  onChange={(event) =>
-                    setRegistrationForm((current) => ({
-                      ...current,
-                      password: event.target.value,
-                    }))
-                  }
+                  onChange={(e) => setRegistrationForm((c) => ({ ...c, password: e.target.value }))}
                   placeholder="At least 8 characters"
                   autoComplete="new-password"
                 />
-                <button
-                  type="button"
-                  className="ghost-button"
-                  onClick={() => setShowPassword((value) => !value)}
-                >
+                <button type="button" className="ghost-button" onClick={() => setShowPassword((v) => !v)}>
                   {showPassword ? 'Hide' : 'Show'}
                 </button>
               </div>
@@ -476,14 +353,8 @@ function App() {
           </form>
         )}
 
-        {error ? (
-          <p className="message error-message" role="alert">
-            {error}
-          </p>
-        ) : null}
-
+        {error ? <p className="message error-message" role="alert">{error}</p> : null}
         {successMessage ? <p className="message info-message">{successMessage}</p> : null}
-
         {!successMessage ? (
           <div className="message info-message">
             {mode === 'login'

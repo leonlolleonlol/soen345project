@@ -6,7 +6,7 @@
   --text-soft: #58707d;
   --accent-strong: #0f6f8c;
   --font-display: "Avenir Next", "Segoe UI", "Trebuchet MS", sans-serif;
-  --font-body: "Trebuchet MS", "Gill Sans", "Segoe UI", sans-serif;
+  --font-body: "Inter", "Segoe UI", "Trebuchet MS", sans-serif;
   --font-mono: "Consolas", "Courier New", monospace;
 
   font-family: var(--font-body);
