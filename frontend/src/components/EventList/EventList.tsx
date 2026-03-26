@@ -23,7 +23,7 @@ function formatDay(dateStr: string): string {
 export function EventList({ filter }: { filter: EventFilter }) {
   const { currentUser } = useUser()
   const [events, setEvents] = useState<Event[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loadedFilter, setLoadedFilter] = useState<EventFilter | null>(null)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(0)
@@ -32,18 +32,22 @@ export function EventList({ filter }: { filter: EventFilter }) {
   const [reserving, setReserving] = useState<Record<number, boolean>>({})
   const [reserved, setReserved] = useState<Record<number, boolean>>({})
 
+  const loading = loadedFilter !== filter
+
   useEffect(() => {
-    setLoading(true)
-    setEvents([])
-    setPage(0)
     getActiveEvents(0, filter)
       .then(({ events, hasMore }) => {
         setEvents(events)
         setHasMore(hasMore)
+        setPage(0)
+        setError(null)
+        setLoadedFilter(filter)
       })
-      .catch((err: Error) => setError(err.message))
-      .finally(() => setLoading(false))
-  }, [filter.city, filter.category, filter.fromDate])
+      .catch((err: Error) => {
+        setError(err.message)
+        setLoadedFilter(filter)
+      })
+  }, [filter])
 
   function reserve(eventId: number) {
     if (!currentUser) return
