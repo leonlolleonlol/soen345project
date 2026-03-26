@@ -40,5 +40,7 @@ export type Event = {
   status: string
   venueName: string
   venueCity: string
+  venueAddress: string
+  venueCapacity: number
   categoryName: string
 }

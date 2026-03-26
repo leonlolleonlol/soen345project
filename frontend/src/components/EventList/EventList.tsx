@@ -4,14 +4,16 @@ import { createReservation } from '../../services/reservationService'
 import { cancelAdminEvent } from '../../services/adminEventService'
 import { useUser } from '../../contexts/UserContext'
 import { useClickOutside } from '../../hooks/useClickOutside'
+import { AddEventModal } from '../AddEventModal/AddEventModal'
 import type { Event, EventFilter } from '../../types'
 
 type KebabMenuProps = {
+  onEdit: () => void
   onCancel: () => void
   cancelling: boolean
 }
 
-function KebabMenu({ onCancel, cancelling }: KebabMenuProps) {
+function KebabMenu({ onEdit, onCancel, cancelling }: KebabMenuProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   useClickOutside(ref, () => setOpen(false))
@@ -29,7 +31,7 @@ function KebabMenu({ onCancel, cancelling }: KebabMenuProps) {
       </button>
       {open && (
         <div className="kebab-menu">
-          <button className="kebab-item kebab-item--edit" onClick={() => setOpen(false)}>
+          <button className="kebab-item kebab-item--edit" onClick={() => { setOpen(false); onEdit() }}>
             Edit
           </button>
           <button
@@ -73,6 +75,7 @@ export function EventList({ filter, isAdmin }: { filter: EventFilter; isAdmin?: 
   const [reserving, setReserving] = useState<Record<number, boolean>>({})
   const [reserved, setReserved] = useState<Record<number, boolean>>({})
   const [cancelling, setCancelling] = useState<Record<number, boolean>>({})
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null)
 
   const loading = loadedFilter !== filter
 
@@ -106,6 +109,10 @@ export function EventList({ filter, isAdmin }: { filter: EventFilter; isAdmin?: 
       })
       .catch((err: Error) => setError(err.message))
       .finally(() => setReserving(prev => ({ ...prev, [eventId]: false })))
+  }
+
+  function handleEventUpdated(updated: Event) {
+    setEvents(prev => prev.map(e => e.eventId === updated.eventId ? updated : e))
   }
 
   function cancelEvent(eventId: number) {
@@ -166,6 +173,7 @@ export function EventList({ filter, isAdmin }: { filter: EventFilter; isAdmin?: 
             <div key={event.eventId} className="event-row">
               {isAdmin && (
                 <KebabMenu
+                  onEdit={() => setEditingEvent(event)}
                   onCancel={() => cancelEvent(event.eventId)}
                   cancelling={cancelling[event.eventId] ?? false}
                 />
@@ -221,6 +229,14 @@ export function EventList({ filter, isAdmin }: { filter: EventFilter; isAdmin?: 
             {loadingMore ? 'Loading…' : 'Load more'}
           </button>
         </div>
+      )}
+
+      {editingEvent && (
+        <AddEventModal
+          event={editingEvent}
+          onClose={() => setEditingEvent(null)}
+          onSaved={updated => { handleEventUpdated(updated); setEditingEvent(null) }}
+        />
       )}
     </>
   )

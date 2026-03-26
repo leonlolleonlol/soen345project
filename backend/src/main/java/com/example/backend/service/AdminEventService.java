@@ -76,17 +76,53 @@ public class AdminEventService {
 
 		EventEntity saved = eventRepository.save(event);
 
+		return toResponse(saved);
+	}
+
+	@Transactional
+	public EventResponse updateEvent(int eventId, CreateEventRequest req) {
+		EventEntity event = eventRepository.findById(eventId)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found: " + eventId));
+
+		VenueEntity venue = venueRepository.findByVenueNameAndCity(req.venueName(), req.venueCity())
+			.orElseGet(() -> {
+				VenueEntity v = new VenueEntity();
+				v.setVenueName(req.venueName());
+				v.setCity(req.venueCity());
+				v.setAddress(req.venueAddress());
+				v.setCapacity(req.venueCapacity());
+				return venueRepository.save(v);
+			});
+
+		CategoryEntity category = categoryRepository.findByCategoryName(req.categoryName())
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+				"Category not found: " + req.categoryName()));
+
+		event.setTitle(req.title());
+		event.setDescription(req.description());
+		event.setEventDate(LocalDateTime.parse(req.eventDate()));
+		event.setAvailableTickets(req.availableTickets());
+		event.setPrice(BigDecimal.valueOf(req.price()));
+		event.setVenue(venue);
+		event.setCategory(category);
+
+		return toResponse(eventRepository.save(event));
+	}
+
+	private EventResponse toResponse(EventEntity e) {
 		return new EventResponse(
-			saved.getEventId(),
-			saved.getTitle(),
-			saved.getDescription(),
-			saved.getEventDate().format(ISO_FORMATTER),
-			saved.getAvailableTickets(),
-			saved.getPrice(),
-			saved.getStatus().name(),
-			saved.getVenue().getVenueName(),
-			saved.getVenue().getCity(),
-			saved.getCategory().getCategoryName()
+			e.getEventId(),
+			e.getTitle(),
+			e.getDescription(),
+			e.getEventDate().format(ISO_FORMATTER),
+			e.getAvailableTickets(),
+			e.getPrice(),
+			e.getStatus().name(),
+			e.getVenue().getVenueName(),
+			e.getVenue().getCity(),
+			e.getVenue().getAddress(),
+			e.getVenue().getCapacity(),
+			e.getCategory().getCategoryName()
 		);
 	}
 }

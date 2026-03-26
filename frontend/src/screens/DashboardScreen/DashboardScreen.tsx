@@ -63,7 +63,7 @@ export function DashboardScreen() {
       {showAddModal && (
         <AddEventModal
           onClose={() => setShowAddModal(false)}
-          onCreated={() => {
+          onSaved={() => {
             setShowAddModal(false)
             setAppliedFilter(f => ({ ...f }))
           }}

@@ -221,6 +221,145 @@ class AdminEventServiceTests {
 		assertEquals(EventStatus.ACTIVE, eventCaptor.getValue().getStatus());
 	}
 
+	// ── updateEvent ───────────────────────────────────────────────────────────
+
+	private EventEntity existingEvent() {
+		EventEntity e = new EventEntity();
+		e.setEventId(10);
+		e.setTitle("Old Title");
+		e.setDescription("Old description");
+		e.setEventDate(LocalDateTime.of(2026, 1, 1, 18, 0));
+		e.setAvailableTickets(50);
+		e.setPrice(new BigDecimal("25.00"));
+		e.setStatus(EventStatus.ACTIVE);
+		e.setVenue(makeVenue());
+		e.setCategory(makeCategory());
+		e.setCreatedBy(1);
+		return e;
+	}
+
+	@Test
+	void updateEventReturnsResponseWithNewValues() {
+		CreateEventRequest req = makeRequest();
+		VenueEntity venue = makeVenue();
+		CategoryEntity category = makeCategory();
+		EventEntity existing = existingEvent();
+
+		when(eventRepository.findById(10)).thenReturn(Optional.of(existing));
+		when(venueRepository.findByVenueNameAndCity("Bell Centre", "Montreal")).thenReturn(Optional.of(venue));
+		when(categoryRepository.findByCategoryName("Concert")).thenReturn(Optional.of(category));
+		when(eventRepository.save(any(EventEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		EventResponse response = adminEventService.updateEvent(10, req);
+
+		assertEquals("Rock Night", response.title());
+		assertEquals(200, response.availableTickets());
+		assertEquals(0, BigDecimal.valueOf(49.99).compareTo(response.price()));
+	}
+
+	@Test
+	void updateEventSavesUpdatedFieldsOnExistingEntity() {
+		CreateEventRequest req = makeRequest();
+		VenueEntity venue = makeVenue();
+		CategoryEntity category = makeCategory();
+		EventEntity existing = existingEvent();
+
+		when(eventRepository.findById(10)).thenReturn(Optional.of(existing));
+		when(venueRepository.findByVenueNameAndCity("Bell Centre", "Montreal")).thenReturn(Optional.of(venue));
+		when(categoryRepository.findByCategoryName("Concert")).thenReturn(Optional.of(category));
+		when(eventRepository.save(any(EventEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		adminEventService.updateEvent(10, req);
+
+		verify(eventRepository).save(eventCaptor.capture());
+		EventEntity saved = eventCaptor.getValue();
+		assertEquals(10, saved.getEventId());
+		assertEquals("Rock Night", saved.getTitle());
+		assertEquals(200, saved.getAvailableTickets());
+		assertEquals(0, BigDecimal.valueOf(49.99).compareTo(saved.getPrice()));
+	}
+
+	@Test
+	void updateEventPreservesCreatedBy() {
+		CreateEventRequest req = makeRequest();
+		VenueEntity venue = makeVenue();
+		CategoryEntity category = makeCategory();
+		EventEntity existing = existingEvent();
+		existing.setCreatedBy(42);
+
+		when(eventRepository.findById(10)).thenReturn(Optional.of(existing));
+		when(venueRepository.findByVenueNameAndCity("Bell Centre", "Montreal")).thenReturn(Optional.of(venue));
+		when(categoryRepository.findByCategoryName("Concert")).thenReturn(Optional.of(category));
+		when(eventRepository.save(any(EventEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		adminEventService.updateEvent(10, req);
+
+		verify(eventRepository).save(eventCaptor.capture());
+		assertEquals(42, eventCaptor.getValue().getCreatedBy());
+	}
+
+	@Test
+	void updateEventUsesExistingVenueWhenFound() {
+		CreateEventRequest req = makeRequest();
+		VenueEntity venue = makeVenue();
+		CategoryEntity category = makeCategory();
+
+		when(eventRepository.findById(10)).thenReturn(Optional.of(existingEvent()));
+		when(venueRepository.findByVenueNameAndCity("Bell Centre", "Montreal")).thenReturn(Optional.of(venue));
+		when(categoryRepository.findByCategoryName("Concert")).thenReturn(Optional.of(category));
+		when(eventRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+		adminEventService.updateEvent(10, req);
+
+		verify(venueRepository, never()).save(any());
+	}
+
+	@Test
+	void updateEventCreatesNewVenueWhenNotFound() {
+		CreateEventRequest req = makeRequest();
+		VenueEntity newVenue = makeVenue();
+		CategoryEntity category = makeCategory();
+
+		when(eventRepository.findById(10)).thenReturn(Optional.of(existingEvent()));
+		when(venueRepository.findByVenueNameAndCity("Bell Centre", "Montreal")).thenReturn(Optional.empty());
+		when(venueRepository.save(any(VenueEntity.class))).thenReturn(newVenue);
+		when(categoryRepository.findByCategoryName("Concert")).thenReturn(Optional.of(category));
+		when(eventRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+		adminEventService.updateEvent(10, req);
+
+		verify(venueRepository).save(venueCaptor.capture());
+		assertEquals("Bell Centre", venueCaptor.getValue().getVenueName());
+	}
+
+	@Test
+	void updateEventThrowsNotFoundWhenEventMissing() {
+		when(eventRepository.findById(99)).thenReturn(Optional.empty());
+
+		ResponseStatusException ex = assertThrows(
+			ResponseStatusException.class,
+			() -> adminEventService.updateEvent(99, makeRequest())
+		);
+
+		assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+		verify(eventRepository, never()).save(any());
+	}
+
+	@Test
+	void updateEventThrowsBadRequestWhenCategoryNotFound() {
+		when(eventRepository.findById(10)).thenReturn(Optional.of(existingEvent()));
+		when(venueRepository.findByVenueNameAndCity("Bell Centre", "Montreal")).thenReturn(Optional.of(makeVenue()));
+		when(categoryRepository.findByCategoryName("Concert")).thenReturn(Optional.empty());
+
+		ResponseStatusException ex = assertThrows(
+			ResponseStatusException.class,
+			() -> adminEventService.updateEvent(10, makeRequest())
+		);
+
+		assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+		verify(eventRepository, never()).save(any());
+	}
+
 	// ── cancelEvent ───────────────────────────────────────────────────────────
 
 	@Test
