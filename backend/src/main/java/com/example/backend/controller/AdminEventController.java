@@ -1,0 +1,27 @@
+package com.example.backend.controller;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.backend.service.AdminEventService;
+
+@RestController
+@RequestMapping("/api/admin/events")
+public class AdminEventController {
+
+	private final AdminEventService adminEventService;
+
+	public AdminEventController(AdminEventService adminEventService) {
+		this.adminEventService = adminEventService;
+	}
+
+	@PostMapping
+	@ResponseStatus(HttpStatus.CREATED)
+	public EventResponse createEvent(@RequestBody CreateEventRequest request) {
+		return adminEventService.createEvent(request);
+	}
+}
