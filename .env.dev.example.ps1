@@ -16,7 +16,3 @@ $env:NOTIFICATION_EMAIL_FROM = 'your-email@example.com'
 $env:TWILIO_ACCOUNT_SID = 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 $env:TWILIO_AUTH_TOKEN = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 $env:TWILIO_FROM_PHONE = '+1234567890'
-
-# Optional test SMS endpoint
-$env:APP_TEST_SMS_ENABLED = 'false'
-$env:APP_TEST_SMS_API_KEY = 'replace-with-a-secret'
