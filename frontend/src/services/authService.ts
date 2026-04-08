@@ -16,7 +16,7 @@ export async function login(identifier: string, password: string): Promise<UserR
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: identifier, password }),
   })
-
+  console.log(response)
   if (!response.ok) {
     const err = (await response.json().catch(() => null)) as ApiErrorResponse | null
     throw new Error(err?.detail ?? err?.message ?? 'We could not sign you in right now.')
