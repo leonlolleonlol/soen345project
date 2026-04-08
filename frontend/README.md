@@ -10,10 +10,10 @@ This is the Vite React frontend for the ticket reservation application.
 
 ## Production deployment
 
-Set `VITE_API_BASE_URL` in Vercel to the deployed backend base URL, for example:
+Option 1: call the backend directly from the browser by setting `VITE_API_BASE_URL` in Vercel:
 
 ```bash
 VITE_API_BASE_URL=https://your-backend.example.com
 ```
 
-If `VITE_API_BASE_URL` is empty, the frontend falls back to relative `/api` requests. That works in local development because Vite proxies those calls to the backend.
+Option 2: leave `VITE_API_BASE_URL` empty and use same-origin `/api` requests. In this repository, Vercel rewrites `/api/*` to the Railway backend, which avoids browser CORS issues because the browser only talks to the Vercel domain.
