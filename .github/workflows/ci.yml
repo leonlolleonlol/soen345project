@@ -30,9 +30,9 @@ jobs:
         working-directory: backend
         run: ./gradlew build -x test
 
-      - name: Run unit tests
+      - name: Run tests
         working-directory: backend
-        run: ./gradlew test
+        run: ./gradlew test --tests "*"
 
   frontend:
     name: Frontend Build
